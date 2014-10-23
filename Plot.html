@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pollen Plot</title>
+<script src="plot.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+<div class='page-header'></div>
+<div id='inputbox'>
+	<div id='select_csv'><label for='csv'>Select CSV File:</label><input type="file" name="csv" id="csv"/></div>
+    <div><button id='load'>Load Data</button>
+</div>
+<div id='controls'></div>
+<div id='plot'></div>
+</body>
+</html>
