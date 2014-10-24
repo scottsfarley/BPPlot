@@ -1,3 +1,4 @@
+
 var plotWidth = 1000;
 var curveHeight = 800;
 var nameOffset = 150;
@@ -33,8 +34,6 @@ function getChronology(data){
 	return chron
 }
 
-data = {}
-
 $('#load').click(function(){
 	csv_file = $('#csv').val()
 	loadData(csv_file)
@@ -53,17 +52,25 @@ function loadData(csv){
 			ids.push(id)
 		}
 		names[csv] = csv_names
-		$('#controls').append('<div id="gulf5.csv" class="file-header">File: ' + csv + '</div>')
+		$('#controls').append($('<div id="' + csv + '" class="file-header">File: ' + csv + '</div>'))
 		id = '#' + csv.replace(".", "\\.")
 		for (i in csv_names){
 			n = csv_names[i]
-			a = '<div><input type="checkbox" class="selectTaxon" name="' + n + '"/><label for="' + n + '">' + n + '</label></div>'
-			$(id).append(a)
+			div = $('<div class="selectiondiv" id="' + n + '_div"></div>')
+			i = $('<input type="checkbox" name="' + n + '"/>')
+			lab = $('<label for="' + n + '">' + n + '</label>')
+			div.append(i)
+			div.append(lab)
+			i.on('click', dispatch)
+			$(id).append(div) // append the name to the csv's div
 		}
 	})
-	
 }
-
-$('#show').click(function(){
-	console.log(data)
-})
+var dispatch = function(){
+	var input = this
+	if (input.checked){
+		console.log('checked')
+	}else{
+		console.log('unchecked')
+	}
+}
