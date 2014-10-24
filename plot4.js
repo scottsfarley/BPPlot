@@ -12,7 +12,7 @@ var depthMinMax = [10000, 0]
 var active_taxa = []
 var depthScale;
 divWidth = $('#plot').width()
-console.log(plotWidth)
+plotWidth = divWidth - 100 - 50
 active_names = []
 
 function setupSVG(height, width){
@@ -59,6 +59,7 @@ function loadData(csv){
 		
 		//check out the depths in the dataset...if there is a new range, adjust it to include the max 
 		fileDepths = getDepths(data)
+		d3.select('#depthAxisSvg').select('.axis').remove()
 		if (d3.max(fileDepths) > depthMinMax[1]){
 			depthMinMax[1] = d3.max(fileDepths)
 		}
@@ -168,7 +169,7 @@ function makePlot(at){ //the central graph loop
 		//append the path the curve group
 		var curve = curve.append('path')
 			.attr('d', path)
-			.attr('stroke', 'red')
+			.attr('stroke', 'blue')
 			.attr('fill', 'blue')
 			
 		//draw out the axis
@@ -176,9 +177,9 @@ function makePlot(at){ //the central graph loop
 			.scale(taxScale)
 			.orient('bottom')
 		var tax = curve.append('g')
-			//.attr('class', 'axis')
-			//.attr('transform', 'translate(' + x_offset + ',' + (curveHeight + 20) + ')')
-			//.call(taxAxis)
+			.attr('class', 'axis')
+			.attr('transform', 'translate(' + x_offset + ',' + (curveHeight + 20) + ')')
+			.call(taxAxis)
 		
 		x_offset += (plotWidth - 20)/at.length
 	}
