@@ -31,8 +31,3 @@
 #main{
 	margin-right: 2%;
 }
-#main, #plot{
-	margin-top:0px;
-	padding-top:0;
-	height: 800px;
-}

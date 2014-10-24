@@ -14,6 +14,9 @@ var depthScale;
 divWidth = $('#plot').width()
 plotWidth = divWidth - 100 - 50
 active_names = []
+pageHeight = $(document).height()
+totalHeight = pageHeight - 200
+curveHeight = totalHeight * .75
 
 function setupSVG(height, width){
 	svg = d3.select('#plot').append('svg')
@@ -139,6 +142,13 @@ function makePlot(at){ //the central graph loop
 			.attr('y', nameOffset - 10)
 			.attr('transform', 'rotate(-45 ' + (x_offset + 20) + ',' +( nameOffset + -20) + ')')
 			.text(name)
+			.selectAll("text")	
+				.style("text-anchor", "end")
+				.attr("dx", "-.8em")
+				.attr("dy", ".15em")
+				.attr("transform", function(d) {
+					return "rotate(-45)" 
+					});
 		//do scaling stuff
 		m = d3.max(tvals, function(d){ return d.x})
 		var taxScale = d3.scale.linear()
