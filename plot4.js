@@ -22,9 +22,9 @@ function setupSVG(height, width){
 	return svg
 }
 
-depthSVG = setupSVG(curveHeight, axisWidth).attr('id', 'depthAxisSvg')
+depthSVG = setupSVG(totalHeight, axisWidth).attr('id', 'depthAxisSvg')
 //chronSVG = setupSVG(curveHeight, axisWidth)
-plotSVG = setupSVG(curveHeight, plotWidth).attr('id', 'plotSvg')
+plotSVG = setupSVG(totalHeight, plotWidth).attr('id', 'plotSvg')
 function getDepths(data){
 	depths = []
 	for (i in data){ //loops over multiple sets from different csvs
@@ -76,6 +76,7 @@ function loadData(csv){
 			.attr('class', 'axis')
 			.attr('transform', 'translate(95, 0)')
 			.call(depthAxis)
+		console.log(depth)
 		
 		//find names
 		for (i in data[csv][0]){
@@ -85,7 +86,7 @@ function loadData(csv){
 			ids.push(id)
 		}
 		names[csv] = csv_names
-		$('#controls').append($('<div id="' + csv + '"></div>'))
+		$('#controls').append($('<div id="' + csv + '" class="fileHolder"></div>'))
 		id = '#' + csv.replace(".", "\\.")
 		$(id).append('<div class="page-header">File: ' + csv + '</div>')
 		for (i in csv_names){
@@ -120,7 +121,7 @@ function getValues(dataset, name){ //get the values for a certain taxon
 
 function makePlot(at){ //the central graph loop
 	d3.selectAll('.curve').remove()
-	var x_offset = 0;
+	var x_offset = 5;
 	plot = plotSVG;
 	for (t in at){
 		console.log('working at: ' + x_offset)
@@ -131,7 +132,6 @@ function makePlot(at){ //the central graph loop
 		curve = plot.append('g')
 			.attr('class', 'curve')
 			.attr('id', id)
-		console.log(curve.attr('id'))
 		//put 45 degree rotated label on top
 		top_label = curve.append('text')
 			.attr('class', 'toplabel')
@@ -141,10 +141,9 @@ function makePlot(at){ //the central graph loop
 			.text(name)
 		//do scaling stuff
 		m = d3.max(tvals, function(d){ return d.x})
-		console.log('Max: ' + (m))
 		var taxScale = d3.scale.linear()
 			.domain([0, m])
-			.range([x_offset, (x_offset + (plotWidth-20)/at.length)])
+			.range([x_offset, (x_offset + (plotWidth - 20)/at.length)])
 		console.log('Scaled' + taxScale(m))
 		pathvals = []
 		start = {'x': x_offset, 'y': nameOffset}
@@ -167,7 +166,7 @@ function makePlot(at){ //the central graph loop
 		path = line(pathvals)
 		
 		//append the path the curve group
-		var curve = curve.append('path')
+		var taxonCurve = curve.append('path')
 			.attr('d', path)
 			.attr('stroke', 'blue')
 			.attr('fill', 'blue')
@@ -178,10 +177,18 @@ function makePlot(at){ //the central graph loop
 			.orient('bottom')
 		var tax = curve.append('g')
 			.attr('class', 'axis')
-			.attr('transform', 'translate(' + x_offset + ',' + (curveHeight + 20) + ')')
+			.attr('transform', 'translate(0' + ',' + (curveHeight + 50) + ')')
 			.call(taxAxis)
+			.selectAll("text")	
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", function(d) {
+                return "rotate(-65)" 
+                });
+
 		
-		x_offset += (plotWidth - 20)/at.length
+		x_offset += (plotWidth)/at.length
 	}
 }
 

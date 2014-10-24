@@ -19,11 +19,12 @@
       <div class="page-header">
       <h1> Pollen Diagram</h1>
       <p>UC Berkeley Department of Geography</p>
+      <div id='inputbox' class='col-xs-2'>
+		<div id='select_csv'><label for='csv'>Select CSV File:</label><input type="file" name="csv" id="csv"/></div>
+    	<div><button id='load'>Load Data</button></div>
+	</div>
       </div>
-<div id='inputbox'>
-	<div id='select_csv'><label for='csv'>Select CSV File:</label><input type="file" name="csv" id="csv"/></div>
-    <div><button id='load'>Load Data</button></div>
-</div>
+
 <div class='row' id='main'>
 <div id='controls' class='col-xs-4'></div>
 <div id='plot' class='col-xs-8'></div>
