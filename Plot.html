@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="plot.css">
 </head>
 
 <body>
@@ -19,9 +20,11 @@
 	<div id='select_csv'><label for='csv'>Select CSV File:</label><input type="file" name="csv" id="csv"/></div>
     <div><button id='load'>Load Data</button></div>
 </div>
-<div id='controls'></div>
-<div id='plot'></div>
-
+<div id='main'>
+    <div id='controls'></div>
+    <div id='plot'></div>
+    </div>
+</div>
 <script src="plot4.js"></script>
 </body>
 </html>

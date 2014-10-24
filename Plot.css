@@ -1,3 +1,31 @@
-.taxaBox{
-	color:#0C0;
+#controls{
+	height: 650px;
+	overflow:auto;
+	width: 20%;
+	margin-top:20px;
+}
+#plot{
+	width: 80%
+}
+.container{
+	margin-left:50px;
+}
+.selectiondiv{
+	width:50%;
+	float: left;
+	display: inline;
+	font:"Times New Roman", Times, serif;
+	font-size:12px;
+	font-weight:lighter !important;
+}
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
 }
