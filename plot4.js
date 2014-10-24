@@ -1,4 +1,3 @@
-
 var plotWidth = 1000;
 var curveHeight = 800;
 var nameOffset = 150;
@@ -12,7 +11,7 @@ var depthMinMax = [10000, 0]
 var active_taxa = []
 var depthScale;
 divWidth = $('#plot').width()
-plotWidth  = divWidth - 200;
+plotWidth  = divWidth;
 console.log(plotWidth)
 
 function setupSVG(height, width){
@@ -74,7 +73,7 @@ function loadData(csv){
 			.orient('left')
 		var depth = d3.select('#depthAxisSvg').append('g')
 			.attr('class', 'axis')
-			.attr('transform', 'translate(75, 0)')
+			.attr('transform', 'translate(65, 0)')
 			.call(depthAxis)
 		
 		//find names
@@ -106,8 +105,10 @@ function getValues(dataset, name){ //get the values for a certain taxon
 	taxon = []
 	index = names[dataset].indexOf(name)
 	for (level in data[dataset]){
+		depth = data[dataset][level][0]
 		d = +data[dataset][level][index]
-		taxon.push(d)
+		point = {'x': d, 'y': depth}
+		taxon.push(point)
 	}
 	return taxon
 }
@@ -119,13 +120,28 @@ function makePlot(at){ //the central graph loop
 	for (t in at){
 		datafile = at[t]['datafile']
 		name = at[t]['Tname']
-		getValues(datafile, name)
+		var tvals = getValues(datafile, name)
+		//put 45 degree rotated label on top
 		top_label = plot.append('text')
 			.attr('class', 'toplabel')
 			.attr('x', x_offset)
 			.attr('text-anchor', 'begin')
 			.attr('y', nameOffset -10)
+			.attr('transform', 'rotate(-45 ' + x_offset + ',' + nameOffset + ')')
 			.text(name)
+		//do scaling stuff
+		var taxScale = d3.scale.linear()
+			.domain([0, d3.max(tvals, function(d){ return d.x})])
+			.range([x_offset, (plotWidth-20)/2])
+		pathvals = []
+		for (t in tvals){
+			x = tvals[t]['x']
+			scaledX = +taxScale(x)
+			y = tvals[t]['y']
+			depthY = +depthScale(y) // could accomodate scaing my chronology later on
+			point = {'x': scaledX, 'y': depthY} 
+			
+		}
 	}
 }
 

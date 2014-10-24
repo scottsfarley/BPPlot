@@ -13,18 +13,30 @@
 </head>
 
 <body>
-<div><button id='show'>Show Data</button></div>
-<div class="container">
-<div class='page-header'></div>
+
+    <div class="container">
+
+      <div class="page-header">
+      <h1> Pollen Diagram</h1>
+      <p>UC Berkeley Department of Geography</p>
+      </div>
 <div id='inputbox'>
 	<div id='select_csv'><label for='csv'>Select CSV File:</label><input type="file" name="csv" id="csv"/></div>
     <div><button id='load'>Load Data</button></div>
 </div>
-<div id='main'>
-    <div id='controls'></div>
-    <div id='plot'></div>
-    </div>
+<div class='row'>
+<div id='controls' class='col-xs-4'></div>
+<div id='plot' class='col-xs-8'></div>
 </div>
+
+      <h3>Non-responsive grid system</h3>
+      <div class="row">
+        <div class="col-xs-4">One third</div>
+        <div class="col-xs-4">One third</div>
+        <div class="col-xs-4">One third</div>
+      </div>
+
+    </div> <!-- /container -->
 <script src="plot4.js"></script>
 </body>
 </html>
