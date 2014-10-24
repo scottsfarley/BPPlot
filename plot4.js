@@ -17,6 +17,7 @@ active_names = []
 pageHeight = $(document).height()
 totalHeight = pageHeight - 200
 curveHeight = totalHeight * .75
+numfiles = 1
 
 function setupSVG(height, width){
 	svg = d3.select('#plot').append('svg')
@@ -50,8 +51,12 @@ function getChronology(data){
 }
 
 $('#load').click(function(){
-	csv_file = $('#csv').val()
+	csv_file = $('#csv' + numfiles).val()
 	loadData(csv_file)
+	$('#csv' + numfiles).attr('disabled', 'disabled')
+	numfiles += 1
+	$('#select_csv').append('<input type="file" name="csv" id="csv' + numfiles + '"/>')
+	$('#load').html('Load Another File')
 })
 
 function loadData(csv){
