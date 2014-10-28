@@ -38,6 +38,7 @@ focus.append('line')
 	.attr('x2', plotWidth)
 	.attr('stroke', 'black')
 	.attr('strokewidth', 1)
+	.attr('display', null)
 focus.append('text')
 	.attr('x', plotWidth - 100)
 	
@@ -68,7 +69,7 @@ $('#load').click(function(){
 	$('#csv' + numfiles).attr('disabled', 'disabled')
 	numfiles += 1
 	$('#select_csv').append('<input type="file" name="csv" id="csv' + numfiles + '"/>')
-	$('#load').html('Load Another File')
+	$('#load').html('Load File')
 })
 
 function loadData(csv){
@@ -96,8 +97,8 @@ function loadData(csv){
 			.attr('class', 'axis')
 			.attr('transform', 'translate(95, 0)')
 			.call(depthAxis)
-		console.log(depth)
-		
+		depthLabel = depth.append('text')
+			.text('Depth (m)')
 		//find names
 		for (i in data[csv][0]){
 			name = data[csv][0][i].trim()
@@ -148,13 +149,13 @@ function makePlot(at){ //the central graph loop
 		datafile = at[t]['datafile']
 		name = at[t]['Tname']
 		var tvals = getValues(datafile, name)
-		id = name.replace(" ", "_").replace("%", "_").replace("/", "_")
+		id = name.replace('+', ' ').replace(/ /g, "_").replace(/%/g, "_").replace(')', "_").replace('(', "_").replace('/', "_")
+		id = "C" + id
 		curve = plot.append('g')
 			.attr('class', 'curve')
 			.attr('id', id)
 			.attr('name', at[t]['Tname'])
 			.on('click', curveclick)
-			.attr('clicked', 'false')
 			
 		//put 45 degree rotated label on top
 		top_label = curve.append('text')
@@ -166,7 +167,7 @@ function makePlot(at){ //the central graph loop
 			.selectAll("text")	
 				.style("text-anchor", "end")
 				.attr("dx", "-.8em")
-				.attr("dy", ".15em")
+				.attr("dy", ".35em")
 				.attr("transform", function(d) {
 					return "rotate(-45)" 
 					});
@@ -213,10 +214,9 @@ function makePlot(at){ //the central graph loop
 		//append the path the curve group
 		var taxonCurve = curve.append('path')
 			.attr('d', path)
-			.attr('stroke', 'blue')
-			.attr('fill', 'blue')
-			.attr('id', id)
-			
+			.attr('fill', 'lightsteelblue')
+			.attr('stroke', 'lightsteelblue')
+			.attr('stroke-width', 1)
 		//draw out the axis
 		var taxAxis = d3.svg.axis()
 			.scale(taxScale)
@@ -228,7 +228,7 @@ function makePlot(at){ //the central graph loop
 			.selectAll("text")	
             .style("text-anchor", "end")
             .attr("dx", "-.8em")
-            .attr("dy", ".25em")
+            .attr("dy", ".35em")
             .attr("transform", function(d) {
                 return "rotate(-65)" 
                 });
@@ -254,11 +254,11 @@ var curveclick = function(){
 				a = orig.select(selection)
 				console.log(a)
 				a.remove()
-				orig_path.attr('fill', 'blue').attr('stroke-width', 1).attr('stroke', 'blue')
+				orig_path.transition().duration(500).attr('fill', 'lightsteelblue').attr('stroke-width', 1).attr('stroke', 'lightsteelblue')
 				orig.attr('clicked', 'false')
 			}else{
 			smoothvals = smooth_paths[curveId]
-			orig_path.attr('fill', 'white').attr('stroke-width', 0.5).attr('stroke', 'grey')
+			orig_path.transition().duration(500).attr('fill', 'none').attr('stroke-width', 0.5).attr('stroke', 'grey')
 			c = orig.append('path')
 				.attr('d', smoothvals)
 				.attr('stroke', 'red')

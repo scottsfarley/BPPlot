@@ -9,6 +9,7 @@
 }
 .container{
 	margin-left:50px;
+	margin-right: 50px;
 }
 .selectiondiv{
 	width:50%;
@@ -31,4 +32,7 @@
 }
 #main{
 	margin-right: 2%;
+}
+.foucs{
+	display: null;
 }
