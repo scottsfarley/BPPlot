@@ -29,6 +29,16 @@ function setupSVG(height, width){
 depthSVG = setupSVG(totalHeight, axisWidth).attr('id', 'depthAxisSvg')
 //chronSVG = setupSVG(curveHeight, axisWidth)
 plotSVG = setupSVG(totalHeight, plotWidth).attr('id', 'plotSvg')
+focus = plotSVG.append('g')
+	.attr('class', 'focus')
+focus.append('line')
+	.attr('x1', 0)
+	.attr('x2', plotWidth)
+	.attr('stroke', 'black')
+	.attr('strokewidth', 1)
+focus.append('text')
+	.attr('x', plotWidth - 100)
+	
 function getDepths(data){
 	depths = []
 	for (i in data){ //loops over multiple sets from different csvs
@@ -140,6 +150,8 @@ function makePlot(at){ //the central graph loop
 		curve = plot.append('g')
 			.attr('class', 'curve')
 			.attr('id', id)
+			.attr('name', at[t]['Tname'])
+			
 		//put 45 degree rotated label on top
 		top_label = curve.append('text')
 			.attr('class', 'toplabel')
@@ -158,33 +170,47 @@ function makePlot(at){ //the central graph loop
 		m = d3.max(tvals, function(d){ return d.x})
 		var taxScale = d3.scale.linear()
 			.domain([0, m])
-			.range([x_offset, (x_offset + (plotWidth - 20)/at.length)])
+			.range([x_offset, (x_offset + (plotWidth -130)/at.length)])
 		console.log('Scaled' + taxScale(m))
 		pathvals = []
+		smoothvals = [] //3 point smoothed values
 		start = {'x': x_offset, 'y': nameOffset}
 		pathvals.push(start)
-		for (t in tvals){
+		smoothvals.push(start)
+		t = 0
+		while (t < tvals.length){
 			x = tvals[t]['x']
 			scaledX = +taxScale(x)
 			y = tvals[t]['y']
 			depthY = +depthScale(y) // could accomodate scaing my chronology later on
 			point = {'x': scaledX, 'y': depthY} 
 			pathvals.push(point)
+			if (t > 1 && t < tvals.length -1){
+				var plus = +taxScale(tvals[t + 1]['x'])
+				var minus = +taxScale(tvals[t - 1]['x'])
+				var smoothx = (2*scaledX + plus + minus)/4
+				var smoothpoint = {'x':smoothx, 'y':depthY}
+				smoothvals.push(smoothpoint)
+			}
+			t +=1
 		}
 		end = {'x': x_offset, 'y':curveHeight}
 		pathvals.push(end)
+		smoothvals.push(end)
 		//transform to svg path
 		var line = d3.svg.line()
 			.x(function (d) {return d.x})
 			.y(function(d){return d.y})
-			.interpolate('bundle')
+			.interpolate('linear')
 		path = line(pathvals)
-		
+		smooth = line(smoothvals)
 		//append the path the curve group
 		var taxonCurve = curve.append('path')
 			.attr('d', path)
 			.attr('stroke', 'blue')
 			.attr('fill', 'blue')
+			.on('click', curveclick)
+			.attr('clicked', 'false')
 			
 		//draw out the axis
 		var taxAxis = d3.svg.axis()
@@ -197,13 +223,54 @@ function makePlot(at){ //the central graph loop
 			.selectAll("text")	
             .style("text-anchor", "end")
             .attr("dx", "-.8em")
-            .attr("dy", ".15em")
+            .attr("dy", ".25em")
             .attr("transform", function(d) {
                 return "rotate(-65)" 
                 });
+		x_offset += (plotWidth - 100)/at.length
+		plot.on('mousemove', mousemove)
+		plot.on('mouseout', function(){
+			focus.attr('display', 'none')
+		})	
+		plot.on('mouseover', function(){
+			focus.attr('display', null)
+		})	
+	}
+}
 
-		
-		x_offset += (plotWidth)/at.length
+var curveclick = function(){
+			var orig = d3.select(this)
+			if (orig.attr('clicked') == 'true'){
+				d3.select('.smooth-curve').remove()
+				orig.attr('fill', 'blue').attr('stroke-width', 1).attr('stroke', 'blue')
+				orig.attr('clicked', 'false')
+			}else{
+			orig.attr('fill', 'white').attr('stroke-width', 0.5).attr('stroke', 'grey')
+			curve.append('path')
+				.attr('d', smooth)
+				.attr('stroke', 'red')
+				.attr('fill', 'none')
+				.attr('stroke-width', 3)
+				.attr('class', 'smooth-curve')
+			orig.attr('clicked', 'true')
+	}
+}
+
+var mousemove = function(){
+	mousex = d3.mouse(this)[0]
+	mousey = d3.mouse(this)[1]
+	
+	depth = depthScale.invert(mousey)
+	if ((depth > depthMinMax[0]) && (depth < depthMinMax[1])){
+		focus.select('line')
+				.attr('y1', mousey)
+				.attr('y2', mousey)
+			var depthlab = Math.round(depth * 100) / 100
+			focus.select('text')
+				.text('Depth: ' + depthlab)
+				.attr('y', mousey - 20) 	
+	}else{
+		focus.attr('display', 'none')
 	}
 }
 
