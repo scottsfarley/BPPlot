@@ -18,6 +18,8 @@ pageHeight = $(document).height()
 totalHeight = pageHeight - 200
 curveHeight = totalHeight * .75
 numfiles = 1
+smooth_paths = {}
+scales = {}
 
 function setupSVG(height, width){
 	svg = d3.select('#plot').append('svg')
@@ -146,11 +148,13 @@ function makePlot(at){ //the central graph loop
 		datafile = at[t]['datafile']
 		name = at[t]['Tname']
 		var tvals = getValues(datafile, name)
-		id = name.replace(" ", "_")
+		id = name.replace(" ", "_").replace("%", "_").replace("/", "_")
 		curve = plot.append('g')
 			.attr('class', 'curve')
 			.attr('id', id)
 			.attr('name', at[t]['Tname'])
+			.on('click', curveclick)
+			.attr('clicked', 'false')
 			
 		//put 45 degree rotated label on top
 		top_label = curve.append('text')
@@ -204,13 +208,14 @@ function makePlot(at){ //the central graph loop
 			.interpolate('linear')
 		path = line(pathvals)
 		smooth = line(smoothvals)
+		
+		smooth_paths[id] = smooth
 		//append the path the curve group
 		var taxonCurve = curve.append('path')
 			.attr('d', path)
 			.attr('stroke', 'blue')
 			.attr('fill', 'blue')
-			.on('click', curveclick)
-			.attr('clicked', 'false')
+			.attr('id', id)
 			
 		//draw out the axis
 		var taxAxis = d3.svg.axis()
@@ -240,18 +245,29 @@ function makePlot(at){ //the central graph loop
 
 var curveclick = function(){
 			var orig = d3.select(this)
+			orig_path = orig.selectAll('path')
+			console.log(orig)
+			curveId = orig.attr('id')
 			if (orig.attr('clicked') == 'true'){
-				d3.select('.smooth-curve').remove()
-				orig.attr('fill', 'blue').attr('stroke-width', 1).attr('stroke', 'blue')
+				var selection = '[smooth_id=' + id + ']' 
+				console.log(selection)
+				a = orig.select(selection)
+				console.log(a)
+				a.remove()
+				orig_path.attr('fill', 'blue').attr('stroke-width', 1).attr('stroke', 'blue')
 				orig.attr('clicked', 'false')
 			}else{
-			orig.attr('fill', 'white').attr('stroke-width', 0.5).attr('stroke', 'grey')
-			curve.append('path')
-				.attr('d', smooth)
+			smoothvals = smooth_paths[curveId]
+			orig_path.attr('fill', 'white').attr('stroke-width', 0.5).attr('stroke', 'grey')
+			c = orig.append('path')
+				.attr('d', smoothvals)
 				.attr('stroke', 'red')
 				.attr('fill', 'none')
 				.attr('stroke-width', 3)
 				.attr('class', 'smooth-curve')
+				.attr('smooth_id', curveId)
+			console.log(c)
+			
 			orig.attr('clicked', 'true')
 	}
 }
