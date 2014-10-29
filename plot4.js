@@ -20,6 +20,11 @@ curveHeight = totalHeight * .75
 numfiles = 1
 smooth_paths = {}
 scales = {}
+var chronScale;
+var chron;
+var chronofile;
+var chronSVG;
+
 
 function setupSVG(height, width){
 	svg = d3.select('#plot').append('svg')
@@ -29,7 +34,6 @@ function setupSVG(height, width){
 }
 
 depthSVG = setupSVG(totalHeight, axisWidth).attr('id', 'depthAxisSvg')
-//chronSVG = setupSVG(curveHeight, axisWidth)
 plotSVG = setupSVG(totalHeight, plotWidth).attr('id', 'plotSvg')
 focus = plotSVG.append('g')
 	.attr('class', 'focus')
@@ -55,21 +59,15 @@ function getDepths(data){
 	}
 	return depths
 }
-function getChronology(data){
-	chron = []
-	for (i in data){
-		chron.push(data[i][1]) // assumes that chronology is always in column 1
-	}
-	return chron
-}
 
 $('#load').click(function(){
+	chronofile = $('#chronoinput').val()
 	csv_file = $('#csv' + numfiles).val()
-	loadData(csv_file)
 	$('#csv' + numfiles).attr('disabled', 'disabled')
 	numfiles += 1
 	$('#select_csv').append('<input type="file" name="csv" id="csv' + numfiles + '"/>')
 	$('#load').html('Load File')
+	loadData(csv_file)
 })
 
 function loadData(csv){
@@ -99,6 +97,42 @@ function loadData(csv){
 			.call(depthAxis)
 		depthLabel = depth.append('text')
 			.text('Depth (m)')
+			
+			if (csv != ""){ //chronology file exists
+				d3.text(chronofile, function(updata){
+					c = d3.csv.parseRows(updata)
+					chron = []
+					chronDepths = []
+					var x = 1
+					while (x < c.length){
+						C = +c[x][1]
+						D = + c[x][0]
+						chron.push(C)
+						chronDepths.push(D)
+						x+=1
+					}
+					var chronMin = d3.min(chron, function(d){return d})
+					var chronMax = d3.max(chron, function(d){return d})
+					var minIndex = chron.indexOf(chronMin)
+					var depthAtMin = chronDepths.splice(minIndex, 1)
+					var maxIndex = chron.indexOf(chronMax)
+					var depthAtMax = chronDepths.splice(maxIndex, 1)
+					var yAtMin = depthScale.invert(depthAtMin)
+					var yAtMax = depthScale.invert(depthAtMax)
+					chronScale = d3.scale.linear()
+						.domain([chronMin, chronMax])
+						.range([yAtMin, yAtMax])
+					console.log(chronScale)
+					chronSVG = setupSVG(curveHeight, axisWidth)
+					chronAxis = d3.svg.axis()
+						.scale(chronScale)
+						.orient('left')
+					chronology = chronSVG.append('g')
+						.attr('class', 'axis')
+						.attr('transform', 'translate(95, 0)')
+						.call(chronAxis)
+				})
+			}
 		//find names
 		for (i in data[csv][0]){
 			name = data[csv][0][i].trim()
@@ -112,14 +146,16 @@ function loadData(csv){
 		$(id).append('<div class="page-header">File: ' + csv + '</div>')
 		for (i in csv_names){
 			n = csv_names[i]
-			div = $('<div class="selectiondiv" id="' + n + '_div"></div>')
-			i = $('<input type="checkbox" name="' + n + '"/>')
-			$(i).data('file', csv)
-			lab = $('<label for="' + n + '">' + n + '</label>')
-			div.append(i)
-			div.append(lab)
-			i.on('click', dispatch)
-			$(id).append(div) // append the name to the csv's div
+			if (n != ""){
+				div = $('<div class="selectiondiv" id="' + n + '_div"></div>')
+				i = $('<input type="checkbox" name="' + n + '"/>')
+				$(i).data('file', csv)
+				lab = $('<label for="' + n + '">' + n + '</label>')
+				div.append(i)
+				div.append(lab)
+				i.on('click', dispatch)
+				$(id).append(div) // append the name to the csv's div
+			}
 		}
 	})
 }
