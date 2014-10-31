@@ -1,6 +1,5 @@
-#inputbox{
-	float:right;
-	padding-top: 25px;
+#loader{
+	float:right
 }
 #controls{
 	height: 650px;
@@ -10,6 +9,9 @@
 .container{
 	margin-left:50px;
 	margin-right: 50px;
+}
+#chronobox{
+	float:right
 }
 .selectiondiv{
 	width:50%;

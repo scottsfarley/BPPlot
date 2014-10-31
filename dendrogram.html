@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<head>
+	<title>
+		Dendrogram
+	</title>
 <meta charset="utf-8">
 <style>
 
@@ -17,14 +21,34 @@
   stroke: #ccc;
   stroke-width: 1.5px;
 }
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
 
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
 </style>
+</head>
 <body>
+		<div class='page-header'>
+		<h2>Dissimilarity Representation of Gulf 479-480</h2>
+		<p>Hierarchical Agglomerative Cluster Analysis</p>
+		<p>Metric: Euclidean</p>
+	</div>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script src="http://mbostock.github.com/d3/d3.v2.js?2.9.1"></script>
 <script>
-
-var width = 750,
-    height = 500;
+var dissim = []
+var width = 1800,
+    height = 1500;
 
 var cluster = d3.layout.cluster()
     .size([height, width - 160]);
@@ -36,7 +60,15 @@ var svg = d3.select("body").append("svg")
     .attr("transform", "translate(40,0)");
 
 d3.json("d3-dendrogram.json", function(json) {
+	
   var nodes = cluster.nodes(json);
+  
+  x = 0
+  while (x < nodes.length){
+  	var xval = nodes[x]['x']
+  	dissim.push(xval)
+  	x+=1
+  }
 
   var link = svg.selectAll("path.link")
       .data(cluster.links(nodes))
@@ -54,15 +86,34 @@ d3.json("d3-dendrogram.json", function(json) {
       .attr("r", 2);
 
   node.append("text")
-      .attr("dx", function(d) { return d.children ? -8 : 8; })
+      .attr("dx", function(d) { return 15})
       .attr("dy", 3)
-      .attr("text-anchor", function(d) { return d.children ? "end" : "start"; })
-      .text(function(d) { return d.name; });
+      .attr("text-anchor", function(d) { return 'start'})
+      .text(function(d) { 
+      	if(d.children.length == 0){
+      		return d.node_id
+      	}});
+   var dMax = d3.max(dissim, function(d){ return d})
+var dMin = d3.min(dissim, function(d){return d})
+console.log(dMax, dMin)
+var Scale = d3.scale.linear()
+	.domain([dMax,dMin ])
+	.range([160, width])
+var xAxis = d3.svg.axis()
+	.scale(Scale)
+	.orient('bottom')
+	.ticks(20)
+var X = svg.append('g')
+	.attr('class', 'axis')
+.attr('transform', 'translate(-160, 10)')
+	.call(xAxis)
 });
 
 function elbow(d, i) {
   return "M" + d.source.y + "," + d.source.x
       + "V" + d.target.x + "H" + d.target.y;
 }
+
+
 
 </script>

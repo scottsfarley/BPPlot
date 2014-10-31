@@ -1,4 +1,3 @@
-var plotWidth =500;
 var curveHeight = 800;
 var nameOffset = 150;
 var axisWidth = 100;
@@ -12,7 +11,7 @@ var depthMinMax = [10000, 0]
 var active_taxa = []
 var depthScale;
 divWidth = $('#plot').width()
-plotWidth = divWidth - 100 - 50
+plotWidth = divWidth - 200 - 50
 active_names = []
 pageHeight = $(document).height()
 totalHeight = pageHeight - 200
@@ -22,8 +21,14 @@ smooth_paths = {}
 scales = {}
 var chronScale;
 var chron;
+var chronDepths;
 var chronofile;
 var chronSVG;
+var depthSVG;
+var depthCalled = false;
+var plotCalled = false;
+var chronCalled = false;
+console.log(plotWidth)
 
 
 function setupSVG(height, width){
@@ -33,18 +38,8 @@ function setupSVG(height, width){
 	return svg
 }
 
-depthSVG = setupSVG(totalHeight, axisWidth).attr('id', 'depthAxisSvg')
-plotSVG = setupSVG(totalHeight, plotWidth).attr('id', 'plotSvg')
-focus = plotSVG.append('g')
-	.attr('class', 'focus')
-focus.append('line')
-	.attr('x1', 0)
-	.attr('x2', plotWidth)
-	.attr('stroke', 'black')
-	.attr('strokewidth', 1)
-	.attr('display', null)
-focus.append('text')
-	.attr('x', plotWidth - 100)
+
+
 	
 function getDepths(data){
 	depths = []
@@ -65,9 +60,14 @@ $('#load').click(function(){
 	csv_file = $('#csv' + numfiles).val()
 	$('#csv' + numfiles).attr('disabled', 'disabled')
 	numfiles += 1
-	$('#select_csv').append('<input type="file" name="csv" id="csv' + numfiles + '"/>')
+	$('#inputbox').append('<input type="file" name="csv" id="csv' + numfiles + '"/>')
 	$('#load').html('Load File')
 	loadData(csv_file)
+	if (depthCalled == false){
+		depthSVG = setupSVG(totalHeight, axisWidth).attr('id', 'depthAxisSvg')
+		console.log('false')
+	}
+	depthCalled = true
 })
 
 function loadData(csv){
@@ -90,49 +90,107 @@ function loadData(csv){
 			.range([nameOffset, curveHeight])
 		var depthAxis = d3.svg.axis()
 			.scale(depthScale)
-			.orient('left')
+			.orient('right')
 		var depth = d3.select('#depthAxisSvg').append('g')
 			.attr('class', 'axis')
-			.attr('transform', 'translate(95, 0)')
+			.attr('transform', 'translate(5, 0)')
 			.call(depthAxis)
-		depthLabel = depth.append('text')
-			.text('Depth (m)')
+		var depth_label = depth.append('text')
+					.attr('class', 'toplabel')
+					.attr('x', 5)
+					.attr('y', nameOffset - 10)
+					.attr('transform', 'rotate(-45 ' + (5) + ',' +( nameOffset + -20) + ')')
+					.text('Depth')
+					.selectAll("text")	
+						.style("text-anchor", "end")
+						.attr("dx", "-.8em")
+						.attr("dy", ".35em")
+						.attr("transform", function(d) {
+							return "rotate(-45)" 
+							})
 			
-			if (csv != ""){ //chronology file exists
+		if (csv != "" && chronCalled == false){ //chronology file exists
 				d3.text(chronofile, function(updata){
+					console.log('Setting Chronology')
+					if (chronCalled == false){
+					chronSVG = setupSVG(totalHeight, axisWidth)
+					}
+					chronCalled = true
+					console.log('added chronology')
 					c = d3.csv.parseRows(updata)
 					chron = []
 					chronDepths = []
+					dates = []
 					var x = 1
 					while (x < c.length){
+						console.log(c[x])
 						C = +c[x][1]
-						D = + c[x][0]
+						D = +c[x][0]
+						date = +c[x][2]
 						chron.push(C)
 						chronDepths.push(D)
+						if (date != 0){dates.push(date)}
 						x+=1
 					}
-					var chronMin = d3.min(chron, function(d){return d})
-					var chronMax = d3.max(chron, function(d){return d})
-					var minIndex = chron.indexOf(chronMin)
-					var depthAtMin = chronDepths.splice(minIndex, 1)
-					var maxIndex = chron.indexOf(chronMax)
-					var depthAtMax = chronDepths.splice(maxIndex, 1)
-					var yAtMin = depthScale.invert(depthAtMin)
-					var yAtMax = depthScale.invert(depthAtMax)
-					chronScale = d3.scale.linear()
-						.domain([chronMin, chronMax])
-						.range([yAtMin, yAtMax])
-					console.log(chronScale)
-					chronSVG = setupSVG(curveHeight, axisWidth)
-					chronAxis = d3.svg.axis()
-						.scale(chronScale)
-						.orient('left')
-					chronology = chronSVG.append('g')
+					function findY(date, depths, chron_array){
+						index = chron_array.indexOf(date)
+						depthAtIndex = depths.splice(index, 1)
+						yAtIndex = depthScale(depthAtIndex)
+						return yAtIndex
+					}
+					chronMin = d3.min(chron, function(d){return d})
+					chronMax = d3.max(chron, function(d){return d})
+					yAtMin = findY(chronMin, chronDepths, chron)
+					maxIndex = chron.indexOf(date) - 1
+					depthAtMax = chronDepths.splice(maxIndex, 1)
+					yAtMax = depthScale(depthAtMax)
+					chronAxis = chronSVG.append('g')
 						.attr('class', 'axis')
-						.attr('transform', 'translate(95, 0)')
-						.call(chronAxis)
+					chronAxis.append('line')
+						.attr('x1', 5)
+						.attr('x2', 5)
+						.attr('y1', yAtMax)
+						.attr('y2', yAtMin)
+						.attr('stroke', 'black')
+					workingDates = dates.sort()
+					q = 0
+					while (q < dates.length) {
+						date = parseInt(workingDates.splice(q, 1))
+						if ($.isNumeric(date)){
+							yVal = findY(date, chronDepths, chron)
+							chronAxis.append('line')
+								.attr('x1', 0)
+								.attr('x2', 10)
+								.attr('y1', yVal)
+								.attr('y2', yVal)
+								.attr('stroke', 'black')
+							chronAxis.append('text')
+								.attr('x', 10)
+								.attr('y', yVal+5)
+								.text(date)
+							}
+							q+=1
+						}
+					var top_label = chronAxis.append('text')
+					.attr('class', 'toplabel')
+					.attr('x', 5)
+					.attr('y', nameOffset - 10)
+					.attr('transform', 'rotate(-45 ' + (5) + ',' +( nameOffset + -20) + ')')
+					.text('Years BP')
+					.selectAll("text")	
+						.style("text-anchor", "end")
+						.attr("dx", "-.8em")
+						.attr("dy", ".35em")
+						.attr("transform", function(d) {
+							return "rotate(-45)" 
+							})
 				})
 			}
+	if (plotCalled == false){
+		plotSVG = setupSVG(totalHeight, plotWidth).attr('id', 'plotSvg')
+	}
+	console.log('added plot')
+	plotCalled = true
 		//find names
 		for (i in data[csv][0]){
 			name = data[csv][0][i].trim()
@@ -157,6 +215,20 @@ function loadData(csv){
 				$(id).append(div) // append the name to the csv's div
 			}
 		}
+	focus = plotSVG.append('g')
+		.attr('class', 'focus')
+	focus.append('line')
+		.attr('x1', 0)
+		.attr('x2', plotWidth)
+		.attr('stroke', 'black')
+		.attr('strokewidth', 1)
+		.attr('display', null)
+	focus.append('text')
+		.attr('x', plotWidth - 150)
+		.attr('id', 'depthtext')
+	focus.append('text')
+		.attr('x', plotWidth - 150)
+		.attr('id', 'chrontext')
 	})
 }
 
@@ -311,16 +383,42 @@ var curveclick = function(){
 var mousemove = function(){
 	mousex = d3.mouse(this)[0]
 	mousey = d3.mouse(this)[1]
-	
 	depth = depthScale.invert(mousey)
+	function closest(array,num){
+	    var i=0;
+	    var minDiff=1000;
+	    var ans;
+	    for(i in array){
+	         var m=Math.abs(num-array[i]);
+	         if(m<minDiff){ 
+	                minDiff=m; 
+	                ans=array[i]; 
+	            }
+	      }
+	    return +ans;
+	}
+
 	if ((depth > depthMinMax[0]) && (depth < depthMinMax[1])){
+		
 		focus.select('line')
 				.attr('y1', mousey)
 				.attr('y2', mousey)
-			var depthlab = Math.round(depth * 100) / 100
-			focus.select('text')
+		var depthlab = Math.round(depth * 100) / 100
+		
+			focus.select('#depthtext')
 				.text('Depth: ' + depthlab)
-				.attr('y', mousey - 20) 	
+				.attr('y', mousey - 20) 
+		if (chron.length > 0){
+			closestChronDepth = closest(chronDepths, depth)
+			closestChronIndex = chronDepths.indexOf(closestChronDepth)
+			closestChronDate = +chron.slice(closestChronIndex, closestChronIndex + 1)
+			var chronlab = Math.round(closestChronDate * 100) / 100 + " Years BP"
+			focus.select('#chrontext')
+				.text('Age: ' + chronlab)
+				.attr('y', mousey + 23)
+		}
+			
+				
 	}else{
 		focus.attr('display', 'none')
 	}
